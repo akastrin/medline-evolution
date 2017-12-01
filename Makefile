@@ -1,7 +1,17 @@
+set-permissions:
+	chmod +x ./data-preparation/scripts/filter_checktags.py
+	chmod +x ./data-preparation/scripts/filter_nodes.py
+	chmod +x ./data-preparation/scripts/filter_edges.py
+	chmod +x ./data-preparation/scripts/cooccurrence.sh
+	chmod +x ./data-preparation/run.sh
 
+data-preparation:
+	sh ./data-preparation/run.sh
 
 community-detection:
 	Rscript ./computation/community-detection/main.R
 
 community-evolution:
-	matlab -nodisplay -nodesktop -nosplash -r "main;quit;"
+	matlab -nosplash -nodesktop -r "try; cd ./computation/community-evolution; main; catch; end; exit";
+
+

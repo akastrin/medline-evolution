@@ -1,38 +1,19 @@
-# library(gtools)
+library(data.table)
 library(igraph)
 library(jsonlite)
-# library(dplyr)
-library(data.table)
-# library(stringr)
-library(tidyverse)
 library(Matrix)
+library(tidyverse)
 set.seed(12345)
 
+setwd("./")
+
 # Precompute frequency distribution of MeSH terms in papers for each year
-xml2txt <- fread("/home/andrej/Documents/dev/community_evolution/figures/data/xml2txt_majr.txt", col.names = c("pmid", "year", "doi"))
-# mesh2pmid <- xml2txt %>% group_by(doi, year) %>% summarise(freq = n_distinct(pmid))
-
-
-# Get all edges which belong to particular community
-get_internal <- function(graph, cluster, m) {
-  res <- E(induced_subgraph(graph, which(cluster$membership == m)))
-  return(res)
-}
-
-# Get all edges which go from community nodes to all
-# other nodes, excluding community nodes
-get_external <- function(graph, cluster, m) {
-  all_edges <- E(graph)[inc(V(graph)[membership(cluster) == m])]
-  all_edges_m <- get.edges(graph, all_edges)
-  res <- all_edges[!(all_edges_m[, 1] %in% V(graph)[membership(cluster) == m] &
-                       all_edges_m[, 2] %in% V(g)[membership(cluster) == m])]
-  return(res)
-}
+xml2txt <- fread("./data/xml2txt_majr.txt", col.names = c("pmid", "year", "doi"))
 
 # Load pre-prepared data
-data_input <- fread(input = "../../data/1.txt", header = FALSE, col.names = c("doi1", "doi2", "year", "freq"))
-freq_data <- fread(input = "../../data/freq.txt", header = FALSE, col.names = c("doi", "year", "freq"))
-mesh <- fread(input = "../../data/doi2name.txt", header = FALSE, col.names = c("doi", "name"))
+data_input <- fread(input = "./data/1.txt", header = FALSE, col.names = c("doi1", "doi2", "year", "freq"))
+freq_data <- fread(input = "./data/freq.txt", header = FALSE, col.names = c("doi", "year", "freq"))
+mesh <- fread(input = "./data/doi2name.txt", header = FALSE, col.names = c("doi", "name"))
 mesh_idx <- tibble(idx = 1:nrow(mesh), mesh = mesh$doi)
 
 # Main loop
@@ -56,14 +37,14 @@ for (i in seq(from = 1966, to = 2014, by = 1)) {
   cluster <- cluster_louvain(g)
   #  Store adjacency matrix in MM format
   adj <- as_adjacency_matrix(graph = g, attr = "weight", sparse = TRUE)
-  filename <- paste0("../../data/adj-mats/adj-mat-", counter, ".mm")
+  filename <- paste0("./data/matlab/adj-mats/adj-mat-", counter, ".mm")
   writeMM(obj = adj, file = filename)
   # Store mesh - cluster - idx triples for year i
   membs <- as.numeric(membership(cluster))
   membs_names <- names(membership(cluster))
   clu_tbl <- tibble(mesh = membs_names, cluster = membs)
   clu_tbl <- left_join(x = clu_tbl, y = mesh_idx, by = "mesh")
-  filename <- paste0("../../data/clu-tabs/clu-tbl-", counter, ".txt")
+  filename <- paste0("./data/matlab/clu-tabs/clu-tbl-", counter, ".txt")
   write_tsv(clu_tbl, filename)
   counter <- counter + 1
   # continue with the analysis
