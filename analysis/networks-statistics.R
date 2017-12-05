@@ -3,11 +3,12 @@ library(data.table)
 library(Rcpp)
 library(R.matlab)
 library(tidyverse)
+library(Matrix)
 # source("clustercoef_kaiser.R")
-sourceCpp("./kaiser.cpp")
+sourceCpp("./scripts/kaiser.cpp")
 
-files <- paste0("/home/andrej/Documents/dev/community-evolution-analysis/data/txts/adjMats/medline/adjMat_", 1:50, ".csv")
-
+# Create network-statistics.csv file
+files <- paste0("../data/matlab/adj-mats/adj-mat-", 1:49, ".mm")
 n_nodes <- vector(mode = "integer", length = length(files))
 n_edges <- vector(mode = "integer", length = length(files))
 ave_deg <- vector(mode = "double", length = length(files))
@@ -17,8 +18,8 @@ cc <- vector(mode = "double", length = length(files))
 
 for (i in 1:length(files)) {
   file <- files[i]
-  data <- fread(file)
-  g <- graph_from_data_frame(data, directed = FALSE)
+  data <- readMM(file)
+  g <- graph_from_adjacency_matrix(adjmatrix = data, mode = "undirected", weighted = TRUE)
   adj <- get.adjacency(g, sparse = FALSE)
   n_nodes[i] <- vcount(g)
   n_edges[i] <- ecount(g)
@@ -29,20 +30,18 @@ for (i in 1:length(files)) {
   cat(i, "\n")
 }
 
-modul <- readMat("/home/andrej/Documents/dev/community-evolution-analysis/data/mats/medline/modularity.mat")
-modul <- as.numeric(modul$mymodularity)
-
-comm_size <- readMat("/home/andrej/Documents/dev/community-evolution-analysis/data/mats/medline/commSizes.mat")
+modularity <- read_tsv("../data/matlab/other/modularity.txt")
+comm_size <- readMat("../data/matlab/other/comm-sizes.mat")
 comm_size <-  apply(comm_size$commSizes != 0, 1, sum)
 
-year <- 1966:2015
+year <- 1966:2014
 tab <- data.frame(year, n_nodes, n_edges, ave_deg, cen, apl, cc, modul, comm_size)
-write_csv(tab, path = "../data/networks_statistics.csv")
+write_tsv(tab, path = "../data/networks_statistics.txt")
 
 
 ####################################
 # Heatmap
-comm_evol_size <- readMat("/home/andrej/Documents/dev/community-evolution-analysis/data/mats/medline/commEvolSize.mat")$commEvolSize
+comm_evol_size <- readMat("../data/matlab/other/comm-evol-size.mat")$commEvolSize
 # library(heatmap3)
 library(RColorBrewer)
 data <- t(comm_evol_size)
@@ -66,7 +65,7 @@ plt <- ggplot(data_melt2, aes(Var2, Var1)) +
         panel.border=element_rect(fill=NA),
         legend.position = "none")
 plt
-ggsave("community-heatmap.pdf", plt, height = 9, width = 5)
+ggsave("../figures/community-heatmap.pdf", plt, height = 9, width = 5)
 
 ####################################
 

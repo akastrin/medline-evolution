@@ -4,10 +4,10 @@
 import sys
 from collections import defaultdict
 
-threshold = 7.879
+threshold = 1.2
 
-file1 = sys.argv[1] #r'database10.txt'
-file2 = sys.argv[2] #r'results.txt'
+file1 = sys.argv[1]
+file2 = sys.argv[2]
 
 # Count distinct PMIDs for each year (year2pmid)
 # Count frequency of DOIs for each year (doi2year)

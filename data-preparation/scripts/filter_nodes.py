@@ -5,7 +5,7 @@ import sys
 from collections import defaultdict
 
 file1 = sys.argv[1]
-threshold = 10
+threshold = 3
 
 doi2year = defaultdict(int)
 with open(file1, 'r') as f1:
@@ -16,5 +16,5 @@ with open(file1, 'r') as f1:
 with open(file1) as f2:
     for line in f2:
         pmid, year, doi = line.strip().split('|')
-        if int(doi2year[(doi, year)]) > threshold:
+        if int(doi2year[(doi, year)]) >= threshold:
         	print(pmid, year, doi, sep="|")
