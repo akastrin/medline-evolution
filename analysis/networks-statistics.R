@@ -90,3 +90,17 @@ mesh2cluster <- function(str_comms) {
 }
 
 
+####################################
+data <- readMM("../data/matlab/adj-mats/adj-mat-1.mm")
+g <- graph_from_adjacency_matrix(adjmatrix = data, mode = "undirected", weighted = TRUE)
+g <- simplify(as.undirected(g))
+l <- layout.auto(g)
+
+png("../figures/net.png")
+plot(g, vertex.size = 0, vertex.shape = "none", vertex.label = NA,
+     edge.color = adjustcolor("black", alpha = .1), edge.curved = TRUE, edge.width=0.2, layout = l)
+dev.off()
+
+library(HiveR)
+gAdj <- get.adjacency(g, type = "upper", edges = FALSE, names = TRUE, sparse = FALSE)
+hive1 <- adj2HPD(gAdj, type = "2D") 
